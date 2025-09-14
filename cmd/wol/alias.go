@@ -7,7 +7,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"sync"
 
 	bolt "go.etcd.io/bbolt"
@@ -59,8 +59,8 @@ type Aliases struct {
 // a default bucket called `Aliases` which is where the alias entries are
 // stored.
 func LoadAliases(dbpath string) (*Aliases, error) {
-	err := os.MkdirAll(path.Dir(dbpath), os.ModePerm)
-	if os.IsNotExist(err) {
+	err := os.MkdirAll(filepath.Dir(dbpath), os.ModePerm)
+	if err != nil {
 		return nil, err
 	}
 
