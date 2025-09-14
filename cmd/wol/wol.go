@@ -41,33 +41,86 @@ var (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// ipFromInterface returns a `*net.UDPAddr` from a network interface name.
+// listNetworkInterfaces 返回所有可用的网络接口信息
+func listNetworkInterfaces() error {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return fmt.Errorf("failed to get network interfaces: %v", err)
+	}
+
+	fmt.Println("Available network interfaces:")
+	for _, iface := range interfaces {
+		// 跳过回环接口和未启用的接口
+		if iface.Flags&net.FlagLoopback != 0 || iface.Flags&net.FlagUp == 0 {
+			continue
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+
+		// 查找IPv4地址
+		var ipv4Addr string
+		for _, addr := range addrs {
+			if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() && ipNet.IP.To4() != nil {
+				ipv4Addr = ipNet.IP.String()
+				break
+			}
+		}
+
+		if ipv4Addr != "" {
+			fmt.Printf("  %s: %s (MAC: %s)\n", iface.Name, ipv4Addr, iface.HardwareAddr.String())
+		}
+	}
+	return nil
+}
+
+// ipFromInterface 从网络接口名称返回 `*net.UDPAddr`
+// 改进版本：提供更详细的错误信息，并在多网卡环境下给出更好的提示
 func ipFromInterface(iface string) (*net.UDPAddr, error) {
 	ief, err := net.InterfaceByName(iface)
 	if err != nil {
-		return nil, err
+		// 如果接口不存在，列出可用接口供用户参考
+		fmt.Printf("Interface '%s' not found. ", iface)
+		listNetworkInterfaces()
+		return nil, fmt.Errorf("interface '%s' not found", iface)
+	}
+
+	// 检查接口是否启用
+	if ief.Flags&net.FlagUp == 0 {
+		return nil, fmt.Errorf("interface '%s' is not up", iface)
 	}
 
 	addrs, err := ief.Addrs()
-	if err == nil && len(addrs) <= 0 {
-		err = fmt.Errorf("no address associated with interface %s", iface)
-	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get addresses for interface '%s': %v", iface, err)
 	}
 
-	// Validate that one of the addrs is a valid network IP address.
+	if len(addrs) <= 0 {
+		return nil, fmt.Errorf("no address associated with interface '%s'", iface)
+	}
+
+	// 查找有效的IPv4地址
+	var validAddrs []string
 	for _, addr := range addrs {
 		switch ip := addr.(type) {
 		case *net.IPNet:
 			if !ip.IP.IsLoopback() && ip.IP.To4() != nil {
+				validAddrs = append(validAddrs, ip.IP.String())
+				// 返回第一个有效的IPv4地址
 				return &net.UDPAddr{
 					IP: ip.IP,
 				}, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("no address associated with interface %s", iface)
+
+	if len(validAddrs) == 0 {
+		return nil, fmt.Errorf("no valid IPv4 address found for interface '%s'", iface)
+	}
+
+	return nil, fmt.Errorf("no suitable address found for interface '%s'", iface)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,6 +163,11 @@ func removeCmd(args []string, aliases *Aliases) error {
 		return aliases.Del(alias)
 	}
 	return errors.New("remove command requires a <name> of an alias")
+}
+
+// Run the interfaces command - 列出所有可用的网络接口
+func interfacesCmd(args []string, aliases *Aliases) error {
+	return listNetworkInterfaces()
 }
 
 // Run the wake command.
@@ -193,10 +251,11 @@ func wakeCmd(args []string, aliases *Aliases) error {
 type cmdFnType func([]string, *Aliases) error
 
 var cmdMap = map[string]cmdFnType{
-	"alias":  aliasCmd,
-	"list":   listCmd,
-	"remove": removeCmd,
-	"wake":   wakeCmd,
+	"alias":      aliasCmd,
+	"list":       listCmd,
+	"remove":     removeCmd,
+	"wake":       wakeCmd,
+	"interfaces": interfacesCmd,
 }
 
 ////////////////////////////////////////////////////////////////////////////////

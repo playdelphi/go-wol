@@ -22,6 +22,7 @@ var (
 		{`list`, `lists all mac addresses and their aliases`},
 		{`alias`, `stores an alias to a mac address`},
 		{`remove`, `removes an alias or a mac address`},
+		{`interfaces`, `lists all available network interfaces`},
 	}
 
 	validOptions = []struct {
@@ -51,11 +52,17 @@ var (
     To delete aliases:
         <cyan>wol</cyan> [<options>] <yellow>remove</yellow> <alias>
 
+    To list network interfaces:
+        <cyan>wol</cyan> [<options>] <yellow>interfaces</yellow>
+
     The following MAC addresses are valid and will match:
     01-23-45-56-67-89, 89:AB:CD:EF:00:12, 89:ab:cd:ef:00:12
 
     The following MAC addresses are not (yet) valid:
     1-2-3-4-5-6, 01 23 45 56 67 89
+
+    Note: In multi-network card environments, use the -i option to specify
+    the correct interface, or use 'wol interfaces' to list available options.
 
 Commands:
 %s
