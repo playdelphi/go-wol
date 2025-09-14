@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
-	"github.com/sabhiram/go-colorize"
 	"github.com/sabhiram/go-wol/wol"
 
 	flags "github.com/jessevdk/go-flags"
@@ -229,7 +229,7 @@ func main() {
 
 	// Disable color if needed.
 	if cliFlags.NoColor {
-		colorize.DisableColor = true
+		color.NoColor = true
 	}
 
 	ec := 0

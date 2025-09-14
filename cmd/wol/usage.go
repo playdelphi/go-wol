@@ -4,10 +4,12 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sabhiram/go-wol/wol"
 
-	"github.com/sabhiram/go-colorize"
+	"github.com/fatih/color"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,5 +89,31 @@ func getAllOptions() string {
 
 // Returns the Usage string for this application.
 func getAppUsageString() string {
-	return colorize.Colorize(fmt.Sprintf(usageString, getAllCommands(), getAllOptions(), wol.Version))
+	text := fmt.Sprintf(usageString, getAllCommands(), getAllOptions(), wol.Version)
+	
+	// Replace color tags with actual colors
+	cyan := color.New(color.FgCyan).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
+	white := color.New(color.FgWhite).SprintFunc()
+	
+	// Replace color tags
+	re := regexp.MustCompile(`<cyan>(.*?)</cyan>`)
+	text = re.ReplaceAllStringFunc(text, func(match string) string {
+		content := strings.TrimPrefix(strings.TrimSuffix(match, "</cyan>"), "<cyan>")
+		return cyan(content)
+	})
+	
+	re = regexp.MustCompile(`<yellow>(.*?)</yellow>`)
+	text = re.ReplaceAllStringFunc(text, func(match string) string {
+		content := strings.TrimPrefix(strings.TrimSuffix(match, "</yellow>"), "<yellow>")
+		return yellow(content)
+	})
+	
+	re = regexp.MustCompile(`<white>(.*?)</white>`)
+	text = re.ReplaceAllStringFunc(text, func(match string) string {
+		content := strings.TrimPrefix(strings.TrimSuffix(match, "</white>"), "<white>")
+		return white(content)
+	})
+	
+	return text
 }

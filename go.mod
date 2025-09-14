@@ -1,12 +1,19 @@
 module github.com/sabhiram/go-wol
 
-go 1.14
+go 1.23.4
 
 require (
-	github.com/coreos/bbolt v1.3.1-coreos.6.0.20180223184059-4f5275f4ebbf
-	github.com/jessevdk/go-flags v0.0.0-20150816100521-1acbbaff2f34
-	github.com/mattn/go-colorable v0.1.11
-	github.com/sabhiram/go-colorize v0.0.0-20210403184538-366f55d711cf
-	github.com/stretchr/testify v0.0.0-20150929183540-2b15294402a8
-	golang.org/x/sys v0.0.0-20211103235746-7861aae1554b // indirect
+	github.com/fatih/color v1.18.0
+	github.com/jessevdk/go-flags v1.6.1
+	github.com/mattn/go-colorable v0.1.14
+	github.com/stretchr/testify v1.11.1
+	go.etcd.io/bbolt v1.4.3
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
